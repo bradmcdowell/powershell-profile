@@ -8,7 +8,7 @@
 $fontFamilies = (New-Object System.Drawing.Text.InstalledFontCollection).Families
 
 # Check if CaskaydiaCove NF is installed
-if ($fontFamilies -notcontains "CaskaydiaCove NF") {
+if ($fontFamilies -notcontains "Cascadia Code") {
     
     # Download and install CaskaydiaCove NF
     $webClient = New-Object System.Net.WebClient
@@ -29,7 +29,7 @@ if ($fontFamilies -notcontains "CaskaydiaCove NF") {
 }
 
 # Check if CaskaydiaCove NF is installed
-if ($fontFamilies -notcontains "Hack NF") {
+if ($fontFamilies -notcontains "Hack Nerd Font") {
     
     # Download and install CaskaydiaCove NF
     $webClient = New-Object System.Net.WebClient
@@ -57,3 +57,6 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 # Terminal Icons Install
 #
 Install-Module -Name Terminal-Icons -Repository PSGallery -Force
+
+	
+Set-ExecutionPolicy RemoteSigned
