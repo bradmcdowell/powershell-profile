@@ -80,4 +80,4 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 Install-Module -Name Terminal-Icons -Repository PSGallery -Force
 
 	
-Set-ExecutionPolicy RemoteSigned
+Write-host "run Set-ExecutionPolicy RemoteSigned"
