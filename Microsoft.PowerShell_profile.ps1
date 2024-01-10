@@ -13,8 +13,11 @@
 ### This is the default policy on Windows Server 2012 R2 and above for server Windows. For 
 ### more information about execution policies, run Get-Help about_Execution_Policies.
 
-$url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
+function Update-PSProfile { $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
 Invoke-RestMethod $url -OutFile $profile
+}
+# $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
+# Invoke-RestMethod $url -OutFile $profile
 #check for updates
 # try{
 #     $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
