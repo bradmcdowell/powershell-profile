@@ -1,42 +1,8 @@
 ### PowerShell template profile 
-### Version 1.03 - Tim Sneath <tim@sneath.org>
-### From https://gist.github.com/timsneath/19867b12eee7fd5af2ba
-###
-### This file should be stored in $PROFILE.CurrentUserAllHosts
-### If $PROFILE.CurrentUserAllHosts doesn't exist, you can make one with the following:
-###    PS> New-Item $PROFILE.CurrentUserAllHosts -ItemType File -Force
-### This will create the file and the containing subdirectory if it doesn't already 
-###
-### As a reminder, to enable unsigned script execution of local scripts on client Windows, 
-### you need to run this line (or similar) from an elevated PowerShell prompt:
-###   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
-### This is the default policy on Windows Server 2012 R2 and above for server Windows. For 
-### more information about execution policies, run Get-Help about_Execution_Policies.
-
 function Update-PSProfile { $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
 Invoke-RestMethod $url -OutFile $profile
 }
-# $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
-# Invoke-RestMethod $url -OutFile $profile
-#check for updates
-# try{
-#     $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
-#     $oldhash = Get-FileHash $PROFILE
-#     Invoke-RestMethod $url -OutFile "$env:temp/Microsoft.PowerShell_profile.ps1"
-#     $newhash = Get-FileHash "$env:temp/Microsoft.PowerShell_profile.ps1"
-#     if ($newhash -ne $oldhash) {
-#         Get-Content "$env:temp/Microsoft.PowerShell_profile.ps1" | Set-Content $PROFILE
-#         . $PROFILE
-#         return
-#     }
-# }
-# catch {
-#     Write-Error "unable to check for `$profile updates"
-# }
-# Remove-Variable @("newhash", "oldhash", "url")
-# Remove-Item  "$env:temp/Microsoft.PowerShell_profile.ps1"
-
-# Import Terminal Icons
+# Terminal Icons
 Import-Module -Name Terminal-Icons
 
 # Find out if the current user identity is elevated (has admin rights)

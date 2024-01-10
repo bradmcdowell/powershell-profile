@@ -32,4 +32,4 @@ if (!(Test-Path -Path $PROFILE -PathType Leaf)) {
          as there is an updater in the installed profile which uses the hash to update the profile 
          and will lead to loss of changes"
  }
-# & $profile
+#& $profile
