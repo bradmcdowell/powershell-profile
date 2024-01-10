@@ -236,7 +236,7 @@ if (Test-Path($ChocolateyProfile)) {
     Import-Module "$ChocolateyProfile"
 }
 
-Invoke-Expression (& { (zoxide init powershell | Out-String) })
+# Invoke-Expression (& { (zoxide init powershell | Out-String) })
 
 
 ## Final Line to set prompt
