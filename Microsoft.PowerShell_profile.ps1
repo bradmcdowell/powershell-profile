@@ -209,4 +209,5 @@ function pgrep($name) {
 
 
 ## Final Line to set prompt
-oh-my-posh init pwsh --config https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/cobalt2.omp.json | Invoke-Expression
+#oh-my-posh init pwsh --config https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/cobalt2.omp.json | Invoke-Expression
+oh-my-posh init pwsh --config "C:\Users\Brad\AppData\Local\Programs\oh-my-posh\themes\zash.omp.json" | Invoke-Expression
