@@ -1,4 +1,10 @@
+# Install PowerShell 7
+winget install --id Microsoft.Powershell --source winget
+winget install --id Microsoft.Powershell.Preview --source winget
+
+# Installl Oh My Posh
 winget install -e --accept-source-agreements --accept-package-agreements JanDeDobbeleer.OhMyPosh
+
 
 # Font Install
 # Get all installed font families
