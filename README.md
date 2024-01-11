@@ -19,9 +19,4 @@ irm "https://github.com/bradmcdowell/powershell-profile/raw/main/setup.ps1" | ie
 ```
 ## 🛠️ Fix the Missing Font
 
-After running the script, you'll find a downloaded `cove.zip` file in the folder you executed the script from. Follow these steps to install the required nerd fonts:
-
-1. Extract the `cove.zip` file.
-2. Locate and install the nerd fonts.
-
-Now, enjoy your enhanced and stylish PowerShell experience! 🚀
+After running the script, you'll need to set the font to a nerd font in Windows Terminal
