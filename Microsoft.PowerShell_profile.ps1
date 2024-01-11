@@ -5,6 +5,28 @@ Invoke-RestMethod $url -OutFile $profile
 # Terminal Icons
 Import-Module -Name Terminal-Icons
 
+#Extras
+Import-Module -Name PSReadLine
+Set-PSReadLineOption -PredictionSource History
+Set-PSReadLineOption -EditMode Windows
+
+set-alias subl 'C:\Program Files\Sublime Text\sublime_text.exe'
+set-alias sub 'C:\Program Files\Sublime Text\sublime_text.exe'
+Set-Alias gst _git_status
+
+Set-Alias k 'C:\Kube\kubectl.exe'
+Set-Alias kubectl 'C:\Kube\kubectl.exe'
+
+# quick ways to navigate around the system, e.g. cd $documents
+# $tools = "c:\tools"
+# $code = "c:\code"
+# $winsitter = "c:\code\winsitter"
+# $vstools = "C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\Tools"
+# $documents = $home + "\Documents"
+# $desktop = $home + "\Desktop"
+# $downloads = $home + "\Downloads"
+# $modules = $home + "\Documents\WindowsPowerShell\Modules"
+
 # Find out if the current user identity is elevated (has admin rights)
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = New-Object Security.Principal.WindowsPrincipal $identity
@@ -194,6 +216,8 @@ function pkill($name) {
 function pgrep($name) {
     Get-Process $name
 }
+
+
 
 # Import the Chocolatey Profile that contains the necessary code to enable
 # tab-completions to function for `choco`.
