@@ -237,4 +237,7 @@ function pgrep($name) {
 #oh-my-posh init pwsh --config "C:\Users\Brad\AppData\Local\Programs\oh-my-posh\themes\zash.omp.json" | Invoke-Expression
 #oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\zash.omp.json" | Invoke-Expression
 #oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\peru.omp.json" | Invoke-Expression
-oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\sonicboom_dark.omp.json" | Invoke-Expression
+#oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\sonicboom_dark.omp.json" | Invoke-Expression
+
+
+oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\kushal.omp.json" | Invoke-Expression
