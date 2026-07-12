@@ -1,246 +1,182 @@
-$MSProfileVesion = "2026.07.12"
-Write-Output "PowerShell Profile Version: $MSProfileVesion"
+$MSProfileVersion = "2026.07.12.4"
+Write-Output "PowerShell Profile Version: $MSProfileVersion"
 
-### PowerShell template profile 
-function Update-PSProfile { $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
-Invoke-RestMethod $url -OutFile $profile
+# ==============================================================================
+# 1. CORE SHELL ENHANCEMENTS & COMPLETIONS
+# ==============================================================================
+Import-Module -Name PSReadLine -ErrorAction SilentlyContinue
+
+# Only apply modern prediction features and terminal icons if we are on PowerShell 7+
+if ($PSVersionTable.PSVersion.Major -ge 7) {
+    Import-Module -Name Terminal-Icons -ErrorAction SilentlyContinue
+    Set-PSReadLineOption -PredictionSource History
+    Set-PSReadLineOption -PredictionViewStyle InlineView
+    Set-PSReadLineOption -EditMode Windows
+    Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+} else {
+    # Fallback basic configuration safe for legacy PowerShell 5.1
+    Set-PSReadLineOption -EditMode Windows
 }
-# Terminal Icons
-Import-Module -Name Terminal-Icons
 
-#Extras
-Import-Module -Name PSReadLine
-Set-PSReadLineOption -PredictionSource History
-Set-PSReadLineOption -EditMode Windows
-
-set-alias subl 'C:\Program Files\Sublime Text\sublime_text.exe'
-set-alias sub 'C:\Program Files\Sublime Text\sublime_text.exe'
+# ==============================================================================
+# 2. APPLICATION ALIASES & EXECUTABLES
+# ==============================================================================
+Set-Alias subl 'C:\Program Files\Sublime Text\sublime_text.exe'
+Set-Alias sub 'C:\Program Files\Sublime Text\sublime_text.exe'
 Set-Alias gst _git_status
 
-Set-Alias k 'C:\Kube\kubectl.exe'
-Set-Alias kubectl 'C:\Kube\kubectl.exe'
-
-# quick ways to navigate around the system, e.g. cd $documents
-# $tools = "c:\tools"
-# $code = "c:\code"
-# $winsitter = "c:\code\winsitter"
-# $vstools = "C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\Tools"
-# $documents = $home + "\Documents"
-# $desktop = $home + "\Desktop"
-# $downloads = $home + "\Downloads"
-# $modules = $home + "\Documents\WindowsPowerShell\Modules"
-
-# Find out if the current user identity is elevated (has admin rights)
-$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-$principal = New-Object Security.Principal.WindowsPrincipal $identity
-$isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-# If so and the current host is a command line, then change to red color 
-# as warning to user that they are operating in an elevated context
-# Useful shortcuts for traversing directories
-function cd... { Set-Location ..\.. }
-function cd.... { Set-Location ..\..\.. }
-
-# Compute file hashes - useful for checking successful downloads 
-function md5 { Get-FileHash -Algorithm MD5 $args }
-function sha1 { Get-FileHash -Algorithm SHA1 $args }
-function sha256 { Get-FileHash -Algorithm SHA256 $args }
-
-# Quick shortcut to start notepad
-function n { notepad $args }
-
-# Drive shortcuts
-function HKLM: { Set-Location HKLM: }
-function HKCU: { Set-Location HKCU: }
-function Env: { Set-Location Env: }
-
-# Creates drive shortcut for Work Folders, if current user account is using it
-if (Test-Path "$env:USERPROFILE\Work Folders") {
-    New-PSDrive -Name Work -PSProvider FileSystem -Root "$env:USERPROFILE\Work Folders" -Description "Work Folders"
-    function Work: { Set-Location Work: }
+if (Test-Path 'C:\Kube\kubectl.exe') {
+    Set-Alias k 'C:\Kube\kubectl.exe'
+    Set-Alias kubectl 'C:\Kube\kubectl.exe'
 }
 
-# Set up command prompt and window title. Use UNIX-style convention for identifying 
-# whether user is elevated (root) or not. Window title shows current version of PowerShell
-# and appends [ADMIN] if appropriate for easy taskbar identification
-function prompt { 
-    if ($isAdmin) {
-        "[" + (Get-Location) + "] # " 
-    } else {
-        "[" + (Get-Location) + "] $ "
-    }
-}
-
-$Host.UI.RawUI.WindowTitle = "PowerShell {0}" -f $PSVersionTable.PSVersion.ToString()
-if ($isAdmin) {
-    $Host.UI.RawUI.WindowTitle += " [ADMIN]"
-}
-
-# Does the the rough equivalent of dir /s /b. For example, dirs *.png is dir /s /b *.png
-function dirs {
-    if ($args.Count -gt 0) {
-        Get-ChildItem -Recurse -Include "$args" | Foreach-Object FullName
-    } else {
-        Get-ChildItem -Recurse | Foreach-Object FullName
-    }
-}
-
-# Simple function to start a new elevated process. If arguments are supplied then 
-# a single command is started with admin rights; if not then a new admin instance
-# of PowerShell is started.
-function admin {
-    if ($args.Count -gt 0) {   
-        $argList = "& '" + $args + "'"
-        Start-Process "$psHome\powershell.exe" -Verb runAs -ArgumentList $argList
-    } else {
-        Start-Process "$psHome\powershell.exe" -Verb runAs
-    }
-}
-
-# Set UNIX-like aliases for the admin command, so sudo <command> will run the command
-# with elevated rights. 
-Set-Alias -Name su -Value admin
-Set-Alias -Name sudo -Value admin
-
-
-# Make it easy to edit this profile once it's installed
-function Edit-Profile {
-    if ($host.Name -match "ise") {
-        $psISE.CurrentPowerShellTab.Files.Add($profile.CurrentUserAllHosts)
-    } else {
-        notepad $profile.CurrentUserAllHosts
-    }
-}
-
-# We don't need these any more; they were just temporary variables to get to $isAdmin. 
-# Delete them to prevent cluttering up the user profile. 
-Remove-Variable identity
-Remove-Variable principal
-
+# Check for best available terminal editor
 Function Test-CommandExists {
     Param ($command)
     $oldPreference = $ErrorActionPreference
     $ErrorActionPreference = 'SilentlyContinue'
     try { if (Get-Command $command) { RETURN $true } }
-    Catch { Write-Host "$command does not exist"; RETURN $false }
+    Catch { RETURN $false }
     Finally { $ErrorActionPreference = $oldPreference }
-} 
-#
-# Aliases
-#
-# If your favorite editor is not here, add an elseif and ensure that the directory it is installed in exists in your $env:Path
-#
-if (Test-CommandExists nvim) {
-    $EDITOR='nvim'
-} elseif (Test-CommandExists pvim) {
-    $EDITOR='pvim'
-} elseif (Test-CommandExists vim) {
-    $EDITOR='vim'
-} elseif (Test-CommandExists vi) {
-    $EDITOR='vi'
-} elseif (Test-CommandExists code) {
-    $EDITOR='code'
-} elseif (Test-CommandExists notepad) {
-    $EDITOR='notepad'
-} elseif (Test-CommandExists notepad++) {
-    $EDITOR='notepad++'
-} elseif (Test-CommandExists sublime_text) {
-    $EDITOR='sublime_text'
 }
+
+if (Test-CommandExists nvim) { $EDITOR='nvim' }
+elseif (Test-CommandExists pvim) { $EDITOR='pvim' }
+elseif (Test-CommandExists vim) { $EDITOR='vim' }
+elseif (Test-CommandExists vi) { $EDITOR='vi' }
+elseif (Test-CommandExists code) { $EDITOR='code' }
+elseif (Test-CommandExists notepad++) { $EDITOR='notepad++' }
+elseif (Test-CommandExists sublime_text) { $EDITOR='sublime_text' }
+else { $EDITOR='notepad' }
+
 Set-Alias -Name vim -Value $EDITOR
 
+# ==============================================================================
+# 3. SHORTCUTS & QUALITY OF LIFE FUNCTIONS
+# ==============================================================================
+function Update-PSProfile { 
+    $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
+    Invoke-RestMethod $url -OutFile $PROFILE
+}
 
-function ll { Get-ChildItem -Path $pwd -File }
-function g { Set-Location $HOME\Documents\Github }
-function gcom {
-    git add .
-    git commit -m "$args"
-}
-function lazyg {
-    git add .
-    git commit -m "$args"
-    git push
-}
-function Get-PubIP {
-    (Invoke-WebRequest http://ifconfig.me/ip ).Content
-}
-function uptime {
-    #Windows Powershell only
-	If ($PSVersionTable.PSVersion.Major -eq 5 ) {
-		Get-WmiObject win32_operatingsystem |
-        Select-Object @{EXPRESSION={ $_.ConverttoDateTime($_.lastbootuptime)}} | Format-Table -HideTableHeaders
-	} Else {
-        net statistics workstation | Select-String "since" | foreach-object {$_.ToString().Replace('Statistics since ', '')}
+function reload-profile { & $PROFILE }
+
+function Edit-Profile {
+    if ($host.Name -match "ise") {
+        $psISE.CurrentPowerShellTab.Files.Add($PROFILE)
+    } else {
+        $editorCmd = Get-Command $EDITOR -ErrorAction SilentlyContinue
+        if ($editorCmd) { & $editorCmd.Definition $PROFILE } else { notepad $PROFILE }
     }
 }
 
-function reload-profile {
-    & $profile
+function cd...  { Set-Location ..\.. }
+function cd.... { Set-Location ..\..\.. }
+function g      { Set-Location $HOME\Documents\Github }
+function ll     { Get-ChildItem -Path $pwd -File }
+function n      { notepad $args }
+
+function HKLM: { Set-Location HKLM: }
+function HKCU: { Set-Location HKCU: }
+function Env:  { Set-Location Env: }
+
+# File Hash Shortcuts
+function md5    { Get-FileHash -Algorithm MD5 $args }
+function sha1   { Get-FileHash -Algorithm SHA1 $args }
+function sha256 { Get-FileHash -Algorithm SHA256 $args }
+
+if (Test-Path "$env:USERPROFILE\Work Folders") {
+    New-PSDrive -Name Work -PSProvider FileSystem -Root "$env:USERPROFILE\Work Folders" -Description "Work Folders" -ErrorAction SilentlyContinue
+    function Work: { Set-Location Work: }
 }
-function find-file($name) {
-    Get-ChildItem -recurse -filter "*${name}*" -ErrorAction SilentlyContinue | ForEach-Object {
-        $place_path = $_.directory
-        Write-Output "${place_path}\${_}"
-    }
-}
-function unzip ($file) {
-    Write-Output("Extracting", $file, "to", $pwd)
-    $fullFile = Get-ChildItem -Path $pwd -Filter .\cove.zip | ForEach-Object { $_.FullName }
-    Expand-Archive -Path $fullFile -DestinationPath $pwd
-}
-function ix ($file) {
-    curl.exe -F "f:1=@$file" ix.io
-}
-function grep($regex, $dir) {
-    if ( $dir ) {
-        Get-ChildItem $dir | select-string $regex
-        return
-    }
-    $input | select-string $regex
-}
-function touch($file) {
-    "" | Out-File $file -Encoding ASCII
-}
-function df {
-    get-volume
-}
+
+# ==============================================================================
+# 4. UNIX-LIKE UTILITIES FOR WINDOWS
+# ==============================================================================
+function touch($file)           { "" | Out-File $file -Encoding ASCII }
+function df                     { Get-Volume }
+function which($name)           { (Get-Command $name).Definition }
+function export($name, $value)  { Set-Item -Force -Path "env:$name" -Value $value }
+function pgrep($name)           { Get-Process $name -ErrorAction SilentlyContinue }
+function pkill($name)           { Get-Process $name -ErrorAction SilentlyContinue | Stop-Process }
+function ix ($file)             { curl.exe -F "f:1=@$file" ix.io }
+function Get-PubIP              { (Invoke-WebRequest http://ifconfig.me/ip).Content.Trim() }
+
 function sed($file, $find, $replace) {
-    (Get-Content $file).replace("$find", $replace) | Set-Content $file
-}
-function which($name) {
-    Get-Command $name | Select-Object -ExpandProperty Definition
-}
-function export($name, $value) {
-    set-item -force -path "env:$name" -value $value;
-}
-function pkill($name) {
-    Get-Process $name -ErrorAction SilentlyContinue | Stop-Process
-}
-function pgrep($name) {
-    Get-Process $name
+    (Get-Content $file).Replace($find, $replace) | Set-Content $file
 }
 
+function grep($regex, $dir) {
+    if ($dir) { Get-ChildItem $dir | Select-String $regex } else { $input | Select-String $regex }
+}
 
+function dirs {
+    if ($args.Count -gt 0) {
+        Get-ChildItem -Recurse -Include "$args" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+    } else {
+        Get-ChildItem -Recurse -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+    }
+}
 
-# Import the Chocolatey Profile that contains the necessary code to enable
-# tab-completions to function for `choco`.
-# Be aware that if you are missing these lines from your profile, tab completion
-# for `choco` will not function.
-# See https://ch0.co/tab-completion for details.
-# $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-# if (Test-Path($ChocolateyProfile)) {
-#     Import-Module "$ChocolateyProfile"
-# }
+function find-file($name) {
+    Get-ChildItem -Recurse -Filter "*${name}*" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+}
 
-# Invoke-Expression (& { (zoxide init powershell | Out-String) })
+function unzip ($file) {
+    if (Test-Path $file) {
+        Write-Output "Extracting $file to $pwd..."
+        Expand-Archive -Path $file -DestinationPath $pwd -Force
+    } else {
+        Write-Error "File not found: $file"
+    }
+}
 
+function uptime {
+    if ($PSVersionTable.PSVersion.Major -le 5) {
+        Get-WmiObject win32_operatingsystem | Select-Object @{EXPRESSION={ $_.ConverttoDateTime($_.lastbootuptime)}} | Format-Table -HideTableHeaders
+    } else {
+        Get-Uptime -Since
+    }
+}
 
-## Final Line to set prompt
-#oh-my-posh init pwsh --config https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/cobalt2.omp.json | Invoke-Expression
-#oh-my-posh init pwsh --config "C:\Users\Brad\AppData\Local\Programs\oh-my-posh\themes\zash.omp.json" | Invoke-Expression
-#oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\zash.omp.json" | Invoke-Expression
-#oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\peru.omp.json" | Invoke-Expression
-#oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\sonicboom_dark.omp.json" | Invoke-Expression
-#oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\kushal.omp.json" | Invoke-Expression
+# ==============================================================================
+# 5. ELEVATION MANAGEMENT & PROMPT ENGINE
+# ==============================================================================
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-oh-my-posh init pwsh --config "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\emodipt-extend.omp.json" | Invoke-Expression
+function admin {
+    $targetHost = if ($PSVersionTable.PSVersion.Major -le 5) { "$psHome\powershell.exe" } else { "$psHome\pwsh.exe" }
+    if ($args.Count -gt 0) {   
+        Start-Process $targetHost -Verb runAs -ArgumentList ("-NoExit -Command & `'" + $args + "`'")
+    } else {
+        Start-Process $targetHost -Verb runAs
+    }
+}
+
+Set-Alias -Name su -Value admin
+Set-Alias -Name sudo -Value admin
+
+$AdminTag = if ($isAdmin) { " [ADMIN]" } else { "" }
+$Host.UI.RawUI.WindowTitle = "PowerShell {0}{1}" -f $PSVersionTable.PSVersion.ToString(), $AdminTag
+
+function gcom { git add .; git commit -m "$args" }
+function lazyg { git add .; git commit -m "$args"; git push }
+
+# ONLY initialize Oh My Posh if we are on PowerShell 7+
+if ($PSVersionTable.PSVersion.Major -ge 7 -and (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
+    $UserThemePath = "$env:USERPROFILE\AppData\Local\Programs\oh-my-posh\themes\emodipt-extend.omp.json"
+    $SharedThemePath = "$env:POSH_THEMES_PATH\emodipt-extend.omp.json"
+
+    if (Test-Path $UserThemePath) {
+        oh-my-posh init pwsh --config $UserThemePath | Invoke-Expression
+    } elseif (Test-Path $SharedThemePath) {
+        oh-my-posh init pwsh --config $SharedThemePath | Invoke-Expression
+    } else {
+        oh-my-posh init pwsh --config "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/emodipt-extend.omp.json" | Invoke-Expression
+    }
+} else {
+    # Clean, lightweight fallback prompt for legacy PowerShell 5.1
+    function prompt {
+        "[" + (Get-Location) + "] $(if ($isAdmin) { '#' } else { '$' }) "
+    }
+}
