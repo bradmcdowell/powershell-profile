@@ -1,11 +1,13 @@
-$MSProfileVersion = "2026.07.12.4"
+$MSProfileVersion = "2026.07.12.5"
 Write-Output "PowerShell Profile Version: $MSProfileVersion"
 
 # ==============================================================================
 # 1. CORE SHELL ENHANCEMENTS & COMPLETIONS
 # ==============================================================================
-Import-Module -Name PSReadLine -ErrorAction SilentlyContinue
-
+# Only import PSReadLine if the engine hasn't already loaded it into the workspace
+if (-not (Get-Module -Name PSReadLine)) {
+    Import-Module -Name PSReadLine -ErrorAction SilentlyContinue
+}
 # Only apply modern prediction features and terminal icons if we are on PowerShell 7+
 if ($PSVersionTable.PSVersion.Major -ge 7) {
     Import-Module -Name Terminal-Icons -ErrorAction SilentlyContinue
