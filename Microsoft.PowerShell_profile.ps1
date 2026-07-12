@@ -1,5 +1,5 @@
 $MSProfileVesion = "2026.07.12"
-Write-Output $MSProfileVesion
+Write-Output "PowerShell Profile Version: $MSProfileVesion"
 
 ### PowerShell template profile 
 function Update-PSProfile { $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
