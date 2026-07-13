@@ -1,5 +1,5 @@
-$MSProfileVersion = "2026.07.13.1"
-Write-Output "PowerShell Profile Version: $MSProfileVersion"
+$MSProfileVersion = "2026.07.13.2"
+Write-Output "Profile Version: $MSProfileVersion"
 
 # ==============================================================================
 # 1. CORE SHELL ENHANCEMENTS & COMPLETIONS
