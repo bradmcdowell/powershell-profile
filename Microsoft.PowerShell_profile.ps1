@@ -1,4 +1,4 @@
-$MSProfileVersion = "2026.07.12.5"
+$MSProfileVersion = "2026.07.13.1"
 Write-Output "PowerShell Profile Version: $MSProfileVersion"
 
 # ==============================================================================
@@ -154,6 +154,36 @@ function admin {
         Start-Process $targetHost -Verb runAs
     }
 }
+
+function Sync-SSHConfig {
+    $NetworkPath = "\\nas1\share\Brad\.ssh\config"
+    $LocalPath   = "$env:USERPROFILE\.ssh\config"
+
+    # 1. Check if the network share is accessible
+    if (Test-Path $NetworkPath) {
+        # 2. Check if a local config already exists
+        if (Test-Path $LocalPath) {
+            $NetworkTime = (Get-Item $NetworkPath).LastWriteTime
+            $LocalTime   = (Get-Item $LocalPath).LastWriteTime
+
+            # 3. Only copy if the network file is newer
+            if ($NetworkTime -gt $LocalTime) {
+                Copy-Item -Path $NetworkPath -Destination $LocalPath -Force
+                Write-Host "[SSH Sync] Updated local config from network share." -ForegroundColor Cyan
+            }
+        } else {
+            # If no local config exists at all, grab the network one
+            Copy-Item -Path $NetworkPath -Destination $LocalPath -Force
+            Write-Host "[SSH Sync] Initialized local config from network share." -ForegroundColor Green
+        }
+    } else {
+        # Fails silently if you are away from home/off the network so it won't slow down shell startup
+        Write-Verbose "[SSH Sync] Network share offline. Using local cache."
+    }
+}
+
+# Run it automatically when the shell opens
+Sync-SSHConfig
 
 Set-Alias -Name su -Value admin
 Set-Alias -Name sudo -Value admin
