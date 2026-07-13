@@ -1,5 +1,5 @@
 $MSProfileVersion = "2026.07.13.1"
-Write-Output "PowerShell Profile Version: $MSProfileVersion"
+Write-Output "Profile Version: $MSProfileVersion"
 
 # ==============================================================================
 # 1. CORE SHELL ENHANCEMENTS & COMPLETIONS
@@ -212,3 +212,4 @@ if ($PSVersionTable.PSVersion.Major -ge 7 -and (Get-Command oh-my-posh -ErrorAct
         "[" + (Get-Location) + "] $(if ($isAdmin) { '#' } else { '$' }) "
     }
 }
+Get-Date
