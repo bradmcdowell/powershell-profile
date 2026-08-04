@@ -3,7 +3,7 @@ winget install --id Microsoft.Powershell --source winget
 winget install --id Microsoft.Powershell.Preview --source winget
 
 # Installl Oh My Posh
-winget install JanDeDobbeleer.OhMyPosh --source winget
+winget install --id PKG.Font.MesloLGM-NF --exact
 
 $url = "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Meslo.zip"
 $zip = "$env:TEMP\Meslo.zip"
