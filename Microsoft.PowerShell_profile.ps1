@@ -1,4 +1,4 @@
-$MSProfileVersion = "2026.07.13.1"
+$MSProfileVersion = "2026.09.02.1"
 Write-Output "Profile Version: $MSProfileVersion"
 
 # ==============================================================================
