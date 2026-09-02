@@ -212,4 +212,81 @@ if ($PSVersionTable.PSVersion.Major -ge 7 -and (Get-Command oh-my-posh -ErrorAct
         "[" + (Get-Location) + "] $(if ($isAdmin) { '#' } else { '$' }) "
     }
 }
+
+function Test-Cert {
+    param(
+        [Parameter(Mandatory=$true, Position=0)]
+        [string]$Target,
+
+        [Parameter(Position=1)]
+        [int]$Port = 443
+    )
+
+    if ($Target -contains ":") {
+        $parts = $Target.Split(":")
+        $Domain = $parts[0]
+        $Port = [int]$parts[1]
+    } else {
+        $Domain = $Target
+    }
+
+    Write-Host "`n====================================================" -ForegroundColor Cyan
+    Write-Host " Certificate Details for ${Domain}:${Port}" -ForegroundColor White
+    Write-Host "====================================================" -ForegroundColor Cyan
+
+    try {
+        $tcpClient = New-Object System.Net.Sockets.TcpClient
+        $connectTask = $tcpClient.ConnectAsync($Domain, $Port)
+        if (-not $connectTask.Wait(5000)) {
+            throw "Connection timed out."
+        }
+
+        $sslStream = New-Object System.Net.Security.SslStream(
+            $tcpClient.GetStream(),
+            $false,
+            { param($sender, $certificate, $chain, $sslPolicyErrors) $true }
+        )
+
+        $sslStream.AuthenticateAsClient($Domain)
+        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($sslStream.RemoteCertificate)
+
+        $issuer = $cert.Issuer
+        $notBefore = $cert.NotBefore
+        $notAfter = $cert.NotAfter
+        $serial = $cert.SerialNumber
+
+        $sanExtension = $cert.Extensions | Where-Object { $_.Oid.Value -eq "2.5.29.17" }
+        $sans = if ($sanExtension) { $sanExtension.Format($true) -replace "`r`n", ", " } else { "None" }
+
+        $daysLeft = [math]::Floor(($notAfter - (Get-Date)).TotalDays)
+
+        Write-Host " Issuer:     " -NoNewline -ForegroundColor White; Write-Host $issuer
+        Write-Host " Issued On:  " -NoNewline -ForegroundColor White; Write-Host $notBefore.ToString("MMM dd HH:mm:ss yyyy UTC")
+        Write-Host " Expires On: " -NoNewline -ForegroundColor White; Write-Host $notAfter.ToString("MMM dd HH:mm:ss yyyy UTC") -NoNewline
+
+        # Fixed conditional syntax below (elseif)
+        if ($daysLeft -lt 0) {
+            Write-Host " (EXPIRED $daysLeft days ago)" -ForegroundColor Red
+        } elseif ($daysLeft -le 7) {
+            Write-Host " ($daysLeft days - CRITICAL)" -ForegroundColor Red
+        } elseif ($daysLeft -le 30) {
+            Write-Host " ($daysLeft days - Expiring Soon)" -ForegroundColor Yellow
+        } else {
+            Write-Host " ($daysLeft days)" -ForegroundColor Green
+        }
+
+        Write-Host " Serial:     " -NoNewline -ForegroundColor White; Write-Host $serial
+        Write-Host " SANs:       " -NoNewline -ForegroundColor White; Write-Host $sans
+        Write-Host "----------------------------------------------------`n" -ForegroundColor Cyan
+
+        $sslStream.Close()
+        $tcpClient.Close()
+
+    } catch {
+        Write-Host "Error: Unable to complete TLS connection to ${Domain}:${Port}" -ForegroundColor Red
+        Write-Host "Details: $_" -ForegroundColor DarkGray
+        Write-Host ""
+    }
+}
+
 Get-Date
