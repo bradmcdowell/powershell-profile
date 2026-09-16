@@ -155,12 +155,29 @@ function admin {
     }
 }
 
+function Test-HostFastReachable {
+    param(
+        [Parameter(Mandatory=$true)][string]$ComputerName,
+        [int]$Port = 445,
+        [int]$TimeoutMs = 300
+    )
+    try {
+        $tcpClient = New-Object System.Net.Sockets.TcpClient
+        $connectTask = $tcpClient.ConnectAsync($ComputerName, $Port)
+        $reachable = $connectTask.Wait($TimeoutMs) -and $tcpClient.Connected
+        $tcpClient.Close()
+        return $reachable
+    } catch {
+        return $false
+    }
+}
+
 function Sync-SSHConfig {
     $NetworkPath = "\\nas1\share\Brad\.ssh\config"
     $LocalPath   = "$env:USERPROFILE\.ssh\config"
 
-    # 1. Check if the network share is accessible
-    if (Test-Path $NetworkPath) {
+    # 1. Fast reachability probe (SMB port) to avoid the long UNC/SMB timeout when offline
+    if (Test-HostFastReachable -ComputerName "nas1" -Port 445 -TimeoutMs 300) {
         # 2. Check if a local config already exists
         if (Test-Path $LocalPath) {
             $NetworkTime = (Get-Item $NetworkPath).LastWriteTime
