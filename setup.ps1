@@ -28,3 +28,18 @@ function Update-PSProfile {
 }
 
 Update-PSProfile
+
+$gitusername = Read-Host -Prompt "Enter git global user.name"  
+$gituseremail = Read-Host -Prompt "Enter git global user.email"  
+
+
+# Set your name (appears on your commits)
+git config --global user.name $gitusername
+
+# Set your email (must match your GitHub/GitLab account)
+git config --global user.email $gituseremail
+
+# Set the default branch name to 'main' for new repositories
+git config --global init.defaultBranch main
+
+git config --global --list
