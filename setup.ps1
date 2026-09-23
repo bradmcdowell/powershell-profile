@@ -21,3 +21,10 @@ Get-ChildItem -Path $out -Filter "*MesloLGM*.ttf" | ForEach-Object {
 }
 
 Remove-Item $zip, $out -Recurse -Force
+
+function Update-PSProfile { 
+    $url = "https://raw.githubusercontent.com/bradmcdowell/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
+    Invoke-RestMethod $url -OutFile $PROFILE
+}
+
+Update-PSProfile
