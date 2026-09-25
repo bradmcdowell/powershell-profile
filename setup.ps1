@@ -43,3 +43,7 @@ git config --global user.email $gituseremail
 git config --global init.defaultBranch main
 
 git config --global --list
+
+dism /online /add-capability /capabilityname:Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0
+dism /online /add-capability /capabilityname:Rsat.Dns.Tools~~~~0.0.1.0
+dism /online /add-capability /capabilityname:Rsat.DHCP.Tools~~~~0.0.1.0
